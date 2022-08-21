@@ -18,8 +18,7 @@ namespace ZXing.Net.Maui.Platforms.Android
 
 		public override View OnCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle)
 		{
-            //TODO: zxingscannerfragmentlayout
-            frame = (FrameLayout)layoutInflater.Inflate(1, viewGroup, false);
+            frame = (FrameLayout)layoutInflater.Inflate(Resource.Layout.zxingscanneractivitylayout, viewGroup, false);
 
 			var layoutParams = GetChildLayoutParams();
 

@@ -69,8 +69,7 @@ namespace ZXing.Net.Maui.Platforms.Android
             if (ScanningOptions.AutoRotate.HasValue && !ScanningOptions.AutoRotate.Value)
                 RequestedOrientation = ScreenOrientation.Nosensor;
 
-            //TODO: zxingscanneractivitylayout
-            SetContentView(1);
+            SetContentView(Resource.Layout.zxingscanneractivitylayout);
 
             scannerFragment = new ZXingScannerFragment();
             scannerFragment.CustomOverlayView = CustomOverlayView;
@@ -78,9 +77,8 @@ namespace ZXing.Net.Maui.Platforms.Android
             scannerFragment.TopText = TopText;
             scannerFragment.BottomText = BottomText;
 
-            //TODO: contentFrame
             SupportFragmentManager.BeginTransaction()
-                .Replace(2, scannerFragment, "ZXINGFRAGMENT")
+                .Replace(Resource.Id.contentFrame, scannerFragment, "ZXINGFRAGMENT")
                 .Commit();
 
             CancelRequestedHandler = CancelScan;
