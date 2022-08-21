@@ -5,9 +5,10 @@ using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using AndroidX.Fragment.App;
-using Permission = Android.Manifest.Permission;
-using View = Android.Views.View;
 using Content = Android.Content;
+using MP = Android.Manifest;
+using Permission = Android.Content.PM.Permission;
+using View = Android.Views.View;
 
 namespace ZXing.Net.Maui.Platforms.Android
 {
@@ -15,8 +16,8 @@ namespace ZXing.Net.Maui.Platforms.Android
     public class ZxingActivity : FragmentActivity
     {
         public static readonly string[] RequiredPermissions = new[] {
-            Permission.Camera,
-            Permission.Flashlight
+            MP.Permission.Camera,
+            MP.Permission.Flashlight
         };
 
         public static Action<ZXing.Result> ScanCompletedHandler;
@@ -91,14 +92,13 @@ namespace ZXing.Net.Maui.Platforms.Android
         protected override async void OnResume()
         {
             base.OnResume();
-
-
             StartScanning();
         }
 
         //TODO
-        //public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
-        //    => Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions,
+                    [GeneratedEnum] Permission[] grantResults)
+            => Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
         void StartScanning()
         {
