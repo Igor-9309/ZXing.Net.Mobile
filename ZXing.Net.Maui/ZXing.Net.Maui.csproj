@@ -8,6 +8,35 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+    <AssemblyName>ZXingNetMaui</AssemblyName>
+    <RootNamespace>ZXing.Net.Maui</RootNamespace>
+    <PackageId>Dyntell.ZXing.Net.Mobile</PackageId>
+    <Summary>ZXing Barcode Scanning for your Maui.Android apps!</Summary>
+    <PackageTags></PackageTags>
+    <Title>ZXing.Net.Maui Barcode Scanner</Title>
+    <Description>
+      ZXing.Net.Maui is a C#/.NET library based on the open source Barcode Library: ZXing (Zebra Crossing), using the ZXing.Net Port. It works with Maui.Android.
+      The goal of ZXing.Net.Maui is to make scanning barcodes as effortless and painless as possible in your own applications.
+      See https://github.com/Redth/ZXing.Net.Mobile/releases for release notes.
+    </Description>
+    <Product>$(AssemblyName) ($(TargetFramework))</Product>
+    <AssemblyVersion>3.2.0.0</AssemblyVersion>
+    <AssemblyFileVersion>3.2.0.0</AssemblyFileVersion>
+    <Version>3.2.0.0</Version>
+    <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
+    <Authors>Redth</Authors>
+    <Owners>Redth</Owners>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Copyright>© Redth</Copyright>
+    <RepositoryUrl>https://github.com/redth/ZXing.Net.Mobile</RepositoryUrl>
+    <PackageReleaseNotes>See: https://github.com/Redth/ZXing.Net.Mobile/releases</PackageReleaseNotes>
+    <DefineConstants>$(DefineConstants);</DefineConstants>
+    <UseFullSemVerForNuGet>false</UseFullSemVerForNuGet>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>http://github.com/Redth/ZXing.Net.Mobile</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
