@@ -2,6 +2,6 @@
 {
     public interface IScannerSessionHost
     {
-       MobileBarcodeScanningOptions ScanningOptions { get; }
+        MobileBarcodeScanningOptions ScanningOptions { get; }
     }
 }

@@ -41,7 +41,7 @@ namespace ZXing.Net.Maui
                 msg += " {0}";
 
             if (Debugger.IsAttached)
-               Debug.WriteLine(msg, elapsed.TotalMilliseconds);
+                Debug.WriteLine(msg, elapsed.TotalMilliseconds);
         }
     }
 }
