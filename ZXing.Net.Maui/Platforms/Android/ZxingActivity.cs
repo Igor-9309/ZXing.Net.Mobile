@@ -72,11 +72,13 @@ namespace ZXing.Net.Maui.Platforms.Android
 
             SetContentView(Resource.Layout.zxingscanneractivitylayout);
 
-            scannerFragment = new ZXingScannerFragment();
-            scannerFragment.CustomOverlayView = CustomOverlayView;
-            scannerFragment.UseCustomOverlayView = UseCustomOverlayView;
-            scannerFragment.TopText = TopText;
-            scannerFragment.BottomText = BottomText;
+            scannerFragment = new ZXingScannerFragment
+            {
+                CustomOverlayView = CustomOverlayView,
+                UseCustomOverlayView = UseCustomOverlayView,
+                TopText = TopText,
+                BottomText = BottomText
+            };
 
             SupportFragmentManager.BeginTransaction()
                 .Replace(Resource.Id.contentFrame, scannerFragment, "ZXINGFRAGMENT")
@@ -106,7 +108,7 @@ namespace ZXing.Net.Maui.Platforms.Android
             {
                 ScanCompletedHandler?.Invoke(result);
 
-                if (!ZxingActivity.ScanContinuously)
+                if (!ScanContinuously)
                     Finish();
             }, ScanningOptions);
         }

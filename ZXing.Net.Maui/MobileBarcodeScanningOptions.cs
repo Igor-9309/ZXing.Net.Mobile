@@ -10,7 +10,7 @@
         public MobileBarcodeScanningOptions()
         {
             PossibleFormats = new List<BarcodeFormat>();
-            //this.AutoRotate = true;
+            //AutoRotate = true;
             DelayBetweenAnalyzingFrames = 150;
             InitialDelayBeforeAnalyzingFrames = 300;
             DelayBetweenContinuousScans = 1000;
@@ -37,7 +37,6 @@
 
         public bool? AssumeGS1 { get; set; }
 
-
         public bool DisableAutofocus { get; set; }
 
         public bool UseNativeScanning { get; set; }
@@ -57,10 +56,7 @@
         /// </summary>
         public FocusPointOfInterest FocusPointOfInterest { get; set; } = new FocusPointOfInterest();
 
-        public static MobileBarcodeScanningOptions Default
-        {
-            get { return new MobileBarcodeScanningOptions(); }
-        }
+        public static MobileBarcodeScanningOptions Default => new();
 
         public BarcodeReaderGeneric BuildBarcodeReader()
         {
@@ -76,7 +72,7 @@
             if (!string.IsNullOrEmpty(CharacterSet))
                 reader.Options.CharacterSet = CharacterSet;
             if (TryInverted.HasValue)
-                reader.TryInverted = TryInverted.Value;
+                reader.Options.TryInverted = TryInverted.Value;
             if (AssumeGS1.HasValue)
                 reader.Options.AssumeGS1 = AssumeGS1.Value;
 
