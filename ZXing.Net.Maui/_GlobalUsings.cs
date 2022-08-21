@@ -1,0 +1,1 @@
+﻿global using ZXing.Net.Maui.Interfaces;

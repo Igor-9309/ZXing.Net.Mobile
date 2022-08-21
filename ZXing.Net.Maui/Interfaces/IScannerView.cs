@@ -1,4 +1,4 @@
-﻿namespace ZXing.Net.Maui
+﻿namespace ZXing.Net.Maui.Interfaces
 {
     public interface IScannerView
     {

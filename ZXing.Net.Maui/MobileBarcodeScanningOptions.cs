@@ -44,6 +44,7 @@
         public int DelayBetweenContinuousScans { get; set; }
 
         public int DelayBetweenAnalyzingFrames { get; set; }
+
         public int InitialDelayBeforeAnalyzingFrames { get; set; }
 
         /// <summary>
