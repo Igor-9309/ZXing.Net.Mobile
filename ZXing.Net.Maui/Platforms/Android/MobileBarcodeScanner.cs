@@ -47,7 +47,6 @@ namespace ZXing.Net.Maui.Platforms.Android
 
             var task = Task.Factory.StartNew(() =>
             {
-
                 var waitScanResetEvent = new ManualResetEvent(false);
 
                 var scanIntent = new Intent(ctx, typeof(ZxingActivity));

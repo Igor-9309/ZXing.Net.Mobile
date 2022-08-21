@@ -10,7 +10,7 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
 
         public void OnPreviewFrame(IntPtr data, Camera camera)
         {
-            if (data != null && data != IntPtr.Zero)
+            if (data != IntPtr.Zero)
             {
                 using var fastArray = new FastJavaByteArray(data);
                 OnPreviewFrameReady?.Invoke(this, fastArray);
@@ -20,7 +20,7 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
 
         public void OnAutoFocus(bool success, Camera camera)
         {
-           Log.Debug(MobileBarcodeScanner.TAG, "AutoFocus {0}", success ? "Succeeded" : "Failed");
+            Log.Debug(MobileBarcodeScanner.TAG, "AutoFocus {0}", success ? "Succeeded" : "Failed");
         }
     }
 }

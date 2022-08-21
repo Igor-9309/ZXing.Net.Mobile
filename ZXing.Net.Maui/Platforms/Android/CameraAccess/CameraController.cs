@@ -14,14 +14,17 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
 {
     public class CameraController
     {
+        int cameraId;
         readonly Context context;
         readonly ISurfaceHolder holder;
         readonly SurfaceView surfaceView;
+        readonly IScannerSessionHost scannerHost;
         readonly CameraEventsListener cameraEventListener;
-        int cameraId;
-        IScannerSessionHost scannerHost;
 
-        public CameraController(SurfaceView surfaceView, CameraEventsListener cameraEventListener, IScannerSessionHost scannerHost)
+        public CameraController(
+            SurfaceView surfaceView,
+            CameraEventsListener cameraEventListener,
+            IScannerSessionHost scannerHost)
         {
             context = surfaceView.Context;
             holder = surfaceView.Holder;
@@ -71,11 +74,9 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
             {
                 Camera.SetPreviewDisplay(holder);
 
-
                 var previewParameters = Camera.GetParameters();
                 var previewSize = previewParameters.PreviewSize;
                 var bitsPerPixel = ImageFormat.GetBitsPerPixel(previewParameters.PreviewFormat);
-
 
                 var bufferSize = (previewSize.Width * previewSize.Height * bitsPerPixel) / 8;
                 const int NUM_PREVIEW_BUFFERS = 5;

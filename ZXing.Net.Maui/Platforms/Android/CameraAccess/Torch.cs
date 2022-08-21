@@ -42,7 +42,7 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
                 if ((supportedFlashModes != null)
                     && (supportedFlashModes.Contains(Camera.Parameters.FlashModeTorch)
                     || supportedFlashModes.Contains(Camera.Parameters.FlashModeOn)))
-                    hasTorch = ZXing.Net.Mobile.Android.PermissionsHandler.IsTorchPermissionDeclared();
+                    hasTorch = Mobile.Android.PermissionsHandler.IsTorchPermissionDeclared();
 
                 return hasTorch != null && hasTorch.Value;
             }
