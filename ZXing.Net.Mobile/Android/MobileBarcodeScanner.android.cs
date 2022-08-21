@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Android.Content;
-using ZXing;
-using Android.OS;
 
 namespace ZXing.Mobile
 {
@@ -37,8 +35,8 @@ namespace ZXing.Mobile
 
 			scanIntent.AddFlags(ActivityFlags.NewTask);
 
-			ZxingActivity.UseCustomOverlayView = this.UseCustomOverlay;
-			ZxingActivity.CustomOverlayView = this.CustomOverlay;
+			ZxingActivity.UseCustomOverlayView = UseCustomOverlay;
+			ZxingActivity.CustomOverlayView = CustomOverlay;
 			ZxingActivity.ScanningOptions = options;
 			ZxingActivity.ScanContinuously = true;
 			ZxingActivity.TopText = TopText;
@@ -66,8 +64,8 @@ namespace ZXing.Mobile
 
 				scanIntent.AddFlags(ActivityFlags.NewTask);
 
-				ZxingActivity.UseCustomOverlayView = this.UseCustomOverlay;
-				ZxingActivity.CustomOverlayView = this.CustomOverlay;
+				ZxingActivity.UseCustomOverlayView = UseCustomOverlay;
+				ZxingActivity.CustomOverlayView = CustomOverlay;
 				ZxingActivity.ScanningOptions = options;
 				ZxingActivity.ScanContinuously = false;
 				ZxingActivity.TopText = TopText;

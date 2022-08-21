@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ZXing.Net.Mobile.Forms.iOS
+﻿namespace ZXing.Net.Mobile.Forms.iOS
 {
 	public static class Platform
 	{

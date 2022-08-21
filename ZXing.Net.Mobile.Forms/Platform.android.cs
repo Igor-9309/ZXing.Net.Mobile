@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ZXing.Net.Mobile.Forms.Android
+﻿namespace ZXing.Net.Mobile.Forms.Android
 {
 	public static class Platform
 	{

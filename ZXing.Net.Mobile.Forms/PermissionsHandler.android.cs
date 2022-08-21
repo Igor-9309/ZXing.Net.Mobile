@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using ZXing.Mobile;
-using System.Linq;
-using Android.App;
-using System.Threading.Tasks;
 using Android.Content.PM;
 
 namespace ZXing.Net.Mobile.Forms.Android
