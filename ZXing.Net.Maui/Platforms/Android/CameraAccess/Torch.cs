@@ -56,7 +56,7 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
 
         public void Toggle() => Enable(!IsEnabled);
 
-        private void Enable(bool state)
+        void Enable(bool state)
         {
             if (!IsSupported || IsEnabled == state)
                 return;
