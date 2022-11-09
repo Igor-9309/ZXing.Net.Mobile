@@ -5,7 +5,6 @@ namespace ZXing.Net.Mobile.Android
 {
     public static class PermissionsHandler
     {
-        [Obsolete("Use Xamarin.Essentials.Platform.OnRequestPermissionsResult instead.")]
         public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
             => Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 

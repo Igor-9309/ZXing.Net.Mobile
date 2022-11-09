@@ -26,7 +26,7 @@ namespace ZXing.Net.Maui.Platforms.Android
         Color laserColor;
 
         int scannerAlpha;
-        List<ZXing.ResultPoint> possibleResultPoints;
+        List<ResultPoint> possibleResultPoints;
 
         public ZxingOverlayView(Context context) : base(context)
         {
@@ -63,7 +63,6 @@ namespace ZXing.Net.Maui.Platforms.Android
 
         protected override void OnDraw(Canvas canvas)
         {
-
             var scale = Context.Resources.DisplayMetrics.Density;
 
             var frame = GetFramingRect(canvas);

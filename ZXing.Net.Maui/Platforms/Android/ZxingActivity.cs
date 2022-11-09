@@ -20,7 +20,7 @@ namespace ZXing.Net.Maui.Platforms.Android
             MP.Permission.Flashlight
         };
 
-        public static Action<ZXing.Result> ScanCompletedHandler;
+        public static Action<Result> ScanCompletedHandler;
         public static Action CanceledHandler;
 
         public static Action CancelRequestedHandler;
@@ -91,13 +91,12 @@ namespace ZXing.Net.Maui.Platforms.Android
             ResumeAnalysisHandler = scannerFragment.ResumeAnalysis;
         }
 
-        protected override async void OnResume()
+        protected override void OnResume()
         {
             base.OnResume();
             StartScanning();
         }
 
-        //TODO
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions,
                     [GeneratedEnum] Permission[] grantResults)
             => Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);

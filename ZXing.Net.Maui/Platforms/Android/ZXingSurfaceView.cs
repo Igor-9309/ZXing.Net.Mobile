@@ -33,6 +33,8 @@ namespace ZXing.Net.Maui.Platforms.Android
                 Holder.SetType(SurfaceType.PushBuffers);
                 addedHolderCallback = true;
             }
+
+            cameraAnalyzer.Torch.TurnOn();
         }
 
         public async void SurfaceCreated(ISurfaceHolder holder)
