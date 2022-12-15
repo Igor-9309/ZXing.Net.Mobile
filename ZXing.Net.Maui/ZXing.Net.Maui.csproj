@@ -36,6 +36,7 @@
     <DefineConstants>$(DefineConstants);</DefineConstants>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>http://github.com/Redth/ZXing.Net.Mobile</PackageProjectUrl>
+    <PublishReadyToRun>false</PublishReadyToRun>
   </PropertyGroup>
 
   <ItemGroup>
