@@ -7,7 +7,7 @@
 #if ANDROID
             builder.Services.AddTransient<IMobileBarcodeScanner, Platforms.Android.MobileBarcodeScanner>();
 #else
-           builder.Services.AddTransient<IMobileBarcodeScanner, MobileBarcodeScannerNotSupported>();
+            builder.Services.AddTransient<IMobileBarcodeScanner, MobileBarcodeScannerNotSupported>();
 #endif
             return builder;
         }

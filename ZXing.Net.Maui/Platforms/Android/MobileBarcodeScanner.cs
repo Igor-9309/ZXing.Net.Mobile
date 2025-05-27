@@ -12,6 +12,8 @@ namespace ZXing.Net.Maui.Platforms.Android
 
         bool torch = false;
 
+        public override bool Supported => true;
+
         Context GetContext(Context context)
             => Platform.CurrentActivity ?? Platform.AppContext;
 

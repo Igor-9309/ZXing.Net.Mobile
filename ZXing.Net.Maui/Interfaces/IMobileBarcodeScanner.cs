@@ -26,5 +26,7 @@
         string CameraUnsupportedMessage { get; set; }
 
         bool IsTorchOn { get; }
+
+        bool Supported { get; }
     }
 }

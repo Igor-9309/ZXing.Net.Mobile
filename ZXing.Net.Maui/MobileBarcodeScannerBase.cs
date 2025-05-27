@@ -39,6 +39,8 @@
 
         public abstract bool IsTorchOn { get; }
 
+        public virtual bool Supported => false;
+
         public abstract void AutoFocus();
 
         public abstract void PauseAnalysis();
