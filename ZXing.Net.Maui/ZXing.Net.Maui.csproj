@@ -22,9 +22,9 @@
     </Description>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <Version>3.3.2.0</Version>
-    <AssemblyVersion>3.3.2.0</AssemblyVersion>
-    <AssemblyFileVersion>3.3.2.0</AssemblyFileVersion>
+    <Version>3.3.2.1</Version>
+    <AssemblyVersion>3.3.2.1</AssemblyVersion>
+    <AssemblyFileVersion>3.3.2.1</AssemblyFileVersion>
     <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
     <Authors>Redth</Authors>
     <Owners>Redth</Owners>
