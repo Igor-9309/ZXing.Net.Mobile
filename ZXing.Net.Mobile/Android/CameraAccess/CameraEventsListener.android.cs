@@ -1,23 +1,24 @@
 ﻿using System;
 using Android.Hardware;
-using ApxLabs.FastAndroidCamera;
 
 namespace ZXing.Mobile.CameraAccess
 {
-	public class CameraEventsListener : Java.Lang.Object, INonMarshalingPreviewCallback, Camera.IAutoFocusCallback
+	public class CameraEventsListener : Java.Lang.Object, Camera.IPreviewCallback, Camera.IAutoFocusCallback
 	{
-		public event EventHandler<FastJavaByteArray> OnPreviewFrameReady;
+		public event EventHandler<byte[]> OnPreviewFrameReady;
 
-		public void OnPreviewFrame(IntPtr data, Camera camera)
+		public void OnPreviewFrame(byte[] data, Camera camera)
 		{
-			if (data != null && data != IntPtr.Zero)
-			{
-				using (var fastArray = new FastJavaByteArray(data))
-				{
-					OnPreviewFrameReady?.Invoke(this, fastArray);
+			if (data == null)
+				return;
 
-					camera.AddCallbackBuffer(fastArray);
-				}
+			try
+			{
+				OnPreviewFrameReady?.Invoke(this, data);
+			}
+			finally
+			{
+				camera.AddCallbackBuffer(data);
 			}
 		}
 

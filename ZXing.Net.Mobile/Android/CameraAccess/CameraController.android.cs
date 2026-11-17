@@ -7,7 +7,6 @@ using Android.Hardware;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
-using ApxLabs.FastAndroidCamera;
 using Camera = Android.Hardware.Camera;
 
 namespace ZXing.Mobile.CameraAccess
@@ -79,15 +78,11 @@ namespace ZXing.Mobile.CameraAccess
 
 				var bufferSize = (previewSize.Width * previewSize.Height * bitsPerPixel) / 8;
 				const int NUM_PREVIEW_BUFFERS = 5;
-				for (uint i = 0; i < NUM_PREVIEW_BUFFERS; ++i)
-				{
-					using (var buffer = new FastJavaByteArray(bufferSize))
-						Camera.AddCallbackBuffer(buffer);
-				}
+				for (var i = 0; i < NUM_PREVIEW_BUFFERS; ++i)
+					Camera.AddCallbackBuffer(new byte[bufferSize]);
 
+				Camera.SetPreviewCallbackWithBuffer(cameraEventListener);
 				Camera.StartPreview();
-
-				Camera.SetNonMarshalingPreviewCallback(cameraEventListener);
 			}
 			catch (Exception ex)
 			{
@@ -133,9 +128,7 @@ namespace ZXing.Mobile.CameraAccess
 				try
 				{
 					Camera.StopPreview();
-					Camera.SetNonMarshalingPreviewCallback(null);
-
-					//Camera.SetPreviewCallback(null);
+					Camera.SetPreviewCallbackWithBuffer(null);
 
 					Android.Util.Log.Debug(MobileBarcodeScanner.TAG, $"Calling SetPreviewDisplay: null");
 					Camera.SetPreviewDisplay(null);
@@ -203,10 +196,6 @@ namespace ZXing.Mobile.CameraAccess
 					Camera = Camera.Open();
 				}
 
-				//if (Camera != null)
-				//    Camera.SetPreviewCallback(_cameraEventListener);
-				//else
-				//    MobileBarcodeScanner.LogWarn(MobileBarcodeScanner.TAG, "Camera is null :(");
 			}
 			catch (Exception ex)
 			{

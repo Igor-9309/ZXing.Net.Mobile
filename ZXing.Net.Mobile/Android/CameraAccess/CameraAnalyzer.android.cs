@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Android.Views;
-using ApxLabs.FastAndroidCamera;
 
 namespace ZXing.Mobile.CameraAccess
 {
@@ -82,11 +81,12 @@ namespace ZXing.Mobile.CameraAccess
 			}
 		}
 
-		void HandleOnPreviewFrameReady(object sender, FastJavaByteArray fastArray)
+		void HandleOnPreviewFrameReady(object sender, byte[] frame)
 		{
-			if (!CanAnalyzeFrame)
+			if (!CanAnalyzeFrame || frame == null)
 				return;
 
+			var frameCopy = (byte[])frame.Clone();
 			wasScanned = false;
 			lastPreviewAnalysis = DateTime.UtcNow;
 
@@ -94,7 +94,7 @@ namespace ZXing.Mobile.CameraAccess
 			{
 				try
 				{
-					DecodeFrame(fastArray);
+					DecodeFrame(frameCopy);
 				}
 				catch (Exception ex)
 				{
@@ -107,36 +107,28 @@ namespace ZXing.Mobile.CameraAccess
 			}, TaskContinuationOptions.OnlyOnFaulted);
 		}
 
-		void DecodeFrame(FastJavaByteArray fastArray)
+		void DecodeFrame(byte[] frame)
 		{
 			var resolution = cameraController.CameraResolution;
 			var width = resolution.Width;
 			var height = resolution.Height;
 
 			var rotate = false;
-			var newWidth = width;
-			var newHeight = height;
-
 			// use last value for performance gain
 			var cDegrees = cameraController.LastCameraDisplayOrientationDegree;
 
 			if (cDegrees == 90 || cDegrees == 270)
 			{
 				rotate = true;
-				newWidth = height;
-				newHeight = width;
 			}
 
 			var start = PerformanceCounter.Start();
 
-			LuminanceSource fast = new FastJavaByteArrayYUVLuminanceSource(fastArray, width, height, 0, 0, width, height); // _area.Left, _area.Top, _area.Width, _area.Height);
+			LuminanceSource fast = new PlanarYUVLuminanceSource(frame, width, height, 0, 0, width, height, false);
 			if (rotate)
 				fast = fast.rotateCounterClockwise();
 
 			var result = barcodeReader.Decode(fast);
-
-			fastArray.Dispose();
-			fastArray = null;
 
 			PerformanceCounter.Stop(start,
 				"Decode Time: {0} ms (width: " + width + ", height: " + height + ", degrees: " + cDegrees + ", rotate: " +

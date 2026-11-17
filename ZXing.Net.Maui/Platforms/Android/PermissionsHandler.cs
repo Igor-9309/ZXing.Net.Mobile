@@ -1,5 +1,4 @@
-﻿using Android.App;
-using Android.Content.PM;
+﻿using Android.Content.PM;
 
 namespace ZXing.Net.Mobile.Android
 {
@@ -15,22 +14,7 @@ namespace ZXing.Net.Mobile.Android
             if (camera != PermissionStatus.Granted)
                 return false;
 
-            // Only check if it's in the manifest already
-            if (Permissions.IsDeclaredInManifest(global::Android.Manifest.Permission.Flashlight))
-            {
-                var flashlight = await Permissions.RequestAsync<Permissions.Flashlight>();
-                if (flashlight != PermissionStatus.Granted)
-                    return false;
-            }
-
             return true;
         }
-
-        internal static bool IsTorchPermissionDeclared()
-            => Permissions.IsDeclaredInManifest(global::Android.Manifest.Permission.Flashlight);
-
-        [Obsolete("Use Xamarin.Essentials.Permissions instead.")]
-        public static bool NeedsPermissionRequest(Activity activity = null)
-            => true;
     }
 }

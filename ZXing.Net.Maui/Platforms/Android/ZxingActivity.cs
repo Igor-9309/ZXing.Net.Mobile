@@ -15,11 +15,6 @@ namespace ZXing.Net.Maui.Platforms.Android
     [Activity(Label = "Scanner", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.KeyboardHidden | ConfigChanges.ScreenLayout)]
     public class ZxingActivity : FragmentActivity
     {
-        public static readonly string[] RequiredPermissions = new[] {
-            MP.Permission.Camera,
-            MP.Permission.Flashlight
-        };
-
         public static Action<Result> ScanCompletedHandler;
         public static Action CanceledHandler;
 
@@ -54,6 +49,10 @@ namespace ZXing.Net.Maui.Platforms.Android
 
         public static string BottomText { get; set; }
 
+        public static string FlashOnButtonText { get; set; }
+
+        public static string FlashOffButtonText { get; set; }
+
         public static bool ScanContinuously { get; set; }
 
         ZXingScannerFragment scannerFragment;
@@ -77,7 +76,9 @@ namespace ZXing.Net.Maui.Platforms.Android
                 CustomOverlayView = CustomOverlayView,
                 UseCustomOverlayView = UseCustomOverlayView,
                 TopText = TopText,
-                BottomText = BottomText
+                BottomText = BottomText,
+                FlashOnButtonText = FlashOnButtonText,
+                FlashOffButtonText = FlashOffButtonText
             };
 
             SupportFragmentManager.BeginTransaction()

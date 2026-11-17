@@ -25,7 +25,7 @@ namespace Sample.Android
 		{
 			base.OnCreate(bundle);
 
-			Xamarin.Essentials.Platform.Init(Application);
+			Xamarin.Essentials.Platform.Init(this, bundle);
 
 			// Set our view from the "main" layout resource
 			SetContentView(Resource.Layout.Main);

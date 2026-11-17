@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0-android</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>net11.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net11.0-windows10.0.19041.0</TargetFrameworks>
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
@@ -22,9 +22,9 @@
     </Description>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <Version>3.3.2.1</Version>
-    <AssemblyVersion>3.3.2.1</AssemblyVersion>
-    <AssemblyFileVersion>3.3.2.1</AssemblyFileVersion>
+    <Version>4.0.0.3</Version>
+    <AssemblyVersion>4.0.0.3</AssemblyVersion>
+    <AssemblyFileVersion>4.0.0.3</AssemblyFileVersion>
     <PackageVersion>$(Version)$(VersionSuffix)</PackageVersion>
     <Authors>Redth</Authors>
     <Owners>Redth</Owners>
@@ -49,15 +49,20 @@
     <PackageReference Include="ZXing.Net" Version="0.16.11" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
-    <PackageReference Include="FastAndroidCamera" Version="2.0.0" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0-android'">
+    <PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.6.2" />
+    <PackageReference Include="Xamarin.AndroidX.Camera.Core" Version="1.6.2" />
+    <PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.6.2" />
+    <PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.6.2" />
     <AndroidResource Include="Resources\layout\*.axml" />
+    <PackageReference Include="Xamarin.AndroidX.Tracing.Tracing.Ktx" Version="2.0.3" />
+    <PackageReference Include="Xamarin.AndroidX.Fragment" Version="1.9.1" />
+    <PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.9.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.51" />
-    <PackageReference Include="Microsoft.Maui.Essentials" Version="10.0.51" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="10.0.51" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="11.0.10" />
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="11.0.10" />
   </ItemGroup>
 
 </Project>

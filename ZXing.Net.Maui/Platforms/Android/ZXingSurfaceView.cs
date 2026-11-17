@@ -1,159 +1,198 @@
 using Android.Content;
-using Android.Graphics;
 using Android.Runtime;
+using Android.Util;
 using Android.Views;
+using Android.Widget;
+using AndroidX.Camera.View;
+using AndroidX.Lifecycle;
 using ZXing.Net.Maui.Platforms.Android.CameraAccess;
 using ZXing.Net.Mobile.Android;
 
 namespace ZXing.Net.Maui.Platforms.Android
 {
-    public class ZXingSurfaceView : SurfaceView, ISurfaceHolderCallback, IScannerView, IScannerSessionHost
+    public class ZXingSurfaceView : FrameLayout, IScannerView, IScannerSessionHost
     {
+        readonly ILifecycleOwner lifecycleOwner;
+        PreviewView previewView;
+        CameraAnalyzer cameraAnalyzer;
+        bool cameraSetupComplete;
+        bool cameraSetupPending;
+
+        internal event Action<bool> TorchStateChanged;
+
         public ZXingSurfaceView(Context context, MobileBarcodeScanningOptions options)
+            : this(context, options, ResolveLifecycleOwner(context))
+        {
+        }
+
+        internal ZXingSurfaceView(Context context, MobileBarcodeScanningOptions options, ILifecycleOwner lifecycleOwner)
             : base(context)
         {
+            this.lifecycleOwner = lifecycleOwner;
             ScanningOptions = options ?? new MobileBarcodeScanningOptions();
             Init();
         }
 
         protected ZXingSurfaceView(IntPtr javaReference, JniHandleOwnership transfer)
-            : base(javaReference, transfer) => Init();
+            : base(javaReference, transfer)
+        {
+            ScanningOptions = new MobileBarcodeScanningOptions();
+        }
 
-        bool addedHolderCallback = false;
+        static ILifecycleOwner ResolveLifecycleOwner(Context context)
+        {
+            if (context is ILifecycleOwner lifecycleOwner)
+                return lifecycleOwner;
+
+            if (context is ContextWrapper wrapper && wrapper.BaseContext is ILifecycleOwner baseLifecycleOwner)
+                return baseLifecycleOwner;
+
+            if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is ILifecycleOwner currentActivity)
+                return currentActivity;
+
+            throw new InvalidOperationException("The scanner requires an AndroidX lifecycle owner.");
+        }
 
         void Init()
         {
-            cameraAnalyzer ??= new CameraAnalyzer(this, this);
-
-            cameraAnalyzer.ResumeAnalysis();
-
-            if (!addedHolderCallback)
+            if (previewView == null)
             {
-                Holder.AddCallback(this);
-                Holder.SetType(SurfaceType.PushBuffers);
-                addedHolderCallback = true;
+                previewView = new PreviewView(Context)
+                {
+                    LayoutParameters = new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MatchParent,
+                        ViewGroup.LayoutParams.MatchParent)
+                };
+                AddView(previewView);
             }
 
-            cameraAnalyzer.Torch.TurnOn();
+            if (cameraAnalyzer == null)
+            {
+                cameraAnalyzer = new CameraAnalyzer(
+                    previewView,
+                    lifecycleOwner ?? ResolveLifecycleOwner(Context),
+                    this);
+                cameraAnalyzer.Torch.StateChanged += OnTorchStateChanged;
+            }
+            cameraAnalyzer.ResumeAnalysis();
         }
 
-        public async void SurfaceCreated(ISurfaceHolder holder)
+        void OnTorchStateChanged(bool isTorchOn)
+            => TorchStateChanged?.Invoke(isTorchOn);
+
+        protected override void OnAttachedToWindow()
         {
-            await PermissionsHandler.RequestPermissionsAsync();
-
-            cameraAnalyzer.SetupCamera();
-
-            surfaceCreated = true;
+            base.OnAttachedToWindow();
+            Init();
+            _ = EnsureCameraSetupAsync();
         }
 
-        public async void SurfaceChanged(ISurfaceHolder holder, Format format, int wx, int hx)
-            => cameraAnalyzer.RefreshCamera();
-
-        public async void SurfaceDestroyed(ISurfaceHolder holder)
+        protected override void OnDetachedFromWindow()
         {
+            cameraSetupComplete = false;
+            cameraAnalyzer?.ShutdownCamera();
+            base.OnDetachedFromWindow();
+        }
+
+        async Task EnsureCameraSetupAsync()
+        {
+            if (cameraSetupComplete || cameraSetupPending || cameraAnalyzer == null)
+                return;
+
+            cameraSetupPending = true;
             try
             {
-                if (addedHolderCallback)
+                if (await PermissionsHandler.RequestPermissionsAsync())
                 {
-                    Holder.RemoveCallback(this);
-                    addedHolderCallback = false;
+                    cameraAnalyzer.SetupCamera();
+                    cameraSetupComplete = true;
                 }
             }
-            catch { }
-
-            cameraAnalyzer.ShutdownCamera();
+            catch (Exception ex)
+            {
+                Log.Error(MobileBarcodeScanner.TAG, ex.ToString());
+            }
+            finally
+            {
+                cameraSetupPending = false;
+            }
         }
 
         public override bool OnTouchEvent(MotionEvent e)
         {
-            var r = base.OnTouchEvent(e);
+            var handled = base.OnTouchEvent(e);
 
             switch (e.Action)
             {
                 case MotionEventActions.Down:
                     return true;
                 case MotionEventActions.Up:
-                    var touchX = e.GetX();
-                    var touchY = e.GetY();
-                    AutoFocus((int)touchX, (int)touchY);
+                    AutoFocus((int)e.GetX(), (int)e.GetY());
                     break;
             }
 
-            return r;
+            return handled;
         }
 
         public void AutoFocus()
-            => cameraAnalyzer.AutoFocus();
+            => cameraAnalyzer?.AutoFocus();
 
         public void AutoFocus(int x, int y)
-            => cameraAnalyzer.AutoFocus(x, y);
+            => cameraAnalyzer?.AutoFocus(x, y);
 
         public void StartScanning(Action<Result> scanResultCallback, MobileBarcodeScanningOptions options = null)
         {
-            cameraAnalyzer.SetupCamera();
-
             ScanningOptions = options ?? MobileBarcodeScanningOptions.Default;
-
-            cameraAnalyzer.BarcodeFound = (result) =>
-                scanResultCallback?.Invoke(result);
+            cameraAnalyzer.BarcodeFound = result => scanResultCallback?.Invoke(result);
             cameraAnalyzer.ResumeAnalysis();
+            _ = EnsureCameraSetupAsync();
         }
 
         public void StopScanning()
-            => cameraAnalyzer.ShutdownCamera();
+        {
+            cameraAnalyzer?.ShutdownCamera();
+            cameraSetupComplete = false;
+        }
 
         public void PauseAnalysis()
-            => cameraAnalyzer.PauseAnalysis();
+            => cameraAnalyzer?.PauseAnalysis();
 
         public void ResumeAnalysis()
-            => cameraAnalyzer.ResumeAnalysis();
+            => cameraAnalyzer?.ResumeAnalysis();
 
         public void Torch(bool on)
         {
             if (on)
-                cameraAnalyzer.Torch.TurnOn();
+                cameraAnalyzer?.Torch.TurnOn();
             else
-                cameraAnalyzer.Torch.TurnOff();
+                cameraAnalyzer?.Torch.TurnOff();
         }
 
         public void ToggleTorch()
-            => cameraAnalyzer.Torch.Toggle();
+            => cameraAnalyzer?.Torch.Toggle();
 
         public MobileBarcodeScanningOptions ScanningOptions { get; set; }
 
-        public bool IsTorchOn => cameraAnalyzer.Torch.IsEnabled;
+        public bool IsTorchOn => cameraAnalyzer?.Torch.IsEnabled ?? false;
 
-        public bool IsAnalyzing => cameraAnalyzer.IsAnalyzing;
+        public bool IsAnalyzing => cameraAnalyzer?.IsAnalyzing ?? false;
 
-        CameraAnalyzer cameraAnalyzer;
-        bool surfaceCreated;
-
-        public bool HasTorch => cameraAnalyzer.Torch.IsSupported;
-
-        protected override void OnAttachedToWindow()
-        {
-            base.OnAttachedToWindow();
-
-            // Reinit things
-            Init();
-        }
+        public bool HasTorch => cameraAnalyzer?.Torch.IsSupported ?? false;
 
         protected override void OnWindowVisibilityChanged(ViewStates visibility)
         {
             base.OnWindowVisibilityChanged(visibility);
             if (visibility == ViewStates.Visible)
+            {
                 Init();
+                _ = EnsureCameraSetupAsync();
+            }
         }
 
-        public override async void OnWindowFocusChanged(bool hasWindowFocus)
+        public override void OnWindowFocusChanged(bool hasWindowFocus)
         {
             base.OnWindowFocusChanged(hasWindowFocus);
-
-            if (!hasWindowFocus)
-                return;
-
-            //only refresh the camera if the surface has already been created. Fixed #569
-            if (surfaceCreated)
+            if (hasWindowFocus && cameraSetupComplete)
                 cameraAnalyzer.RefreshCamera();
         }
     }

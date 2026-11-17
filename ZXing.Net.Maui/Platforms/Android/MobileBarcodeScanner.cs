@@ -33,6 +33,8 @@ namespace ZXing.Net.Maui.Platforms.Android
             ZxingActivity.ScanContinuously = true;
             ZxingActivity.TopText = TopText;
             ZxingActivity.BottomText = BottomText;
+            ZxingActivity.FlashOnButtonText = FlashOnButtonText;
+            ZxingActivity.FlashOffButtonText = FlashOffButtonText;
 
             ZxingActivity.ScanCompletedHandler = (Result result)
                 => scanHandler?.Invoke(result);
@@ -61,6 +63,8 @@ namespace ZXing.Net.Maui.Platforms.Android
                 ZxingActivity.ScanContinuously = false;
                 ZxingActivity.TopText = TopText;
                 ZxingActivity.BottomText = BottomText;
+                ZxingActivity.FlashOnButtonText = FlashOnButtonText;
+                ZxingActivity.FlashOffButtonText = FlashOffButtonText;
 
                 Result scanResult = null;
 

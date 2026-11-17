@@ -159,9 +159,10 @@ namespace ZXing.Mobile
 		public override UIInterfaceOrientationMask GetSupportedInterfaceOrientations()
 			=> UIInterfaceOrientationMask.All;
 
-		[Obsolete("Deprecated in iOS6. Replace it with both GetSupportedInterfaceOrientations and PreferredInterfaceOrientationForPresentation")]
-		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
-			=> ScanningOptions?.AutoRotate ?? false;
+		public override UIInterfaceOrientation PreferredInterfaceOrientationForPresentation()
+			=> View.Frame.Width > View.Frame.Height
+				? UIInterfaceOrientation.LandscapeLeft
+				: UIInterfaceOrientation.Portrait;
 
 		void HandleOnScannerSetupComplete()
 			=> BeginInvokeOnMainThread(() =>

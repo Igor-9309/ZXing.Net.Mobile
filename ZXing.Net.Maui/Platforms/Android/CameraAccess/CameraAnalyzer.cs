@@ -1,25 +1,23 @@
 ﻿using Android.Util;
-using Android.Views;
-using ApxLabs.FastAndroidCamera;
+using AndroidX.Camera.Core;
+using AndroidX.Camera.View;
+using AndroidX.Lifecycle;
 
 namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
 {
-    public class CameraAnalyzer
+    public class CameraAnalyzer : Java.Lang.Object, ImageAnalysis.IAnalyzer
     {
         readonly CameraController cameraController;
-        readonly CameraEventsListener cameraEventListener;
-        Task processingTask;
+        readonly IScannerSessionHost scannerHost;
         DateTime lastPreviewAnalysis = DateTime.UtcNow;
         bool wasScanned;
-        readonly IScannerSessionHost scannerHost;
         BarcodeReaderGeneric barcodeReader;
 
-        public CameraAnalyzer(SurfaceView surfaceView, IScannerSessionHost scannerHost)
+        public CameraAnalyzer(PreviewView previewView, ILifecycleOwner lifecycleOwner, IScannerSessionHost scannerHost)
         {
             this.scannerHost = scannerHost;
-            cameraEventListener = new CameraEventsListener();
-            cameraController = new CameraController(surfaceView, cameraEventListener, scannerHost);
-            Torch = new Torch(cameraController, surfaceView.Context);
+            cameraController = new CameraController(previewView, lifecycleOwner, scannerHost);
+            Torch = new Torch(cameraController);
         }
 
         public Action<Result> BarcodeFound;
@@ -37,15 +35,14 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
         public void ShutdownCamera()
         {
             IsAnalyzing = false;
-            cameraEventListener.OnPreviewFrameReady -= HandleOnPreviewFrameReady;
+            Torch.TurnOff();
             cameraController.ShutdownCamera();
         }
 
         public void SetupCamera()
         {
-            cameraEventListener.OnPreviewFrameReady += HandleOnPreviewFrameReady;
-            cameraController.SetupCamera();
             barcodeReader = scannerHost.ScanningOptions.BuildBarcodeReader();
+            cameraController.SetupCamera(this);
         }
 
         public void AutoFocus()
@@ -64,91 +61,75 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
                 if (!IsAnalyzing)
                     return false;
 
-                //Check and see if we're still processing a previous frame
-                // todo: check if we can run as many as possible or mby run two analyzers at once (Vision + ZXing)
-                if (processingTask != null && !processingTask.IsCompleted)
-                    return false;
-
                 var elapsedTimeMs = (DateTime.UtcNow - lastPreviewAnalysis).TotalMilliseconds;
                 if (elapsedTimeMs < scannerHost.ScanningOptions.DelayBetweenAnalyzingFrames)
                     return false;
 
-                // Delay a minimum between scans
-                if (wasScanned && elapsedTimeMs < scannerHost.ScanningOptions.DelayBetweenContinuousScans)
-                    return false;
-
-                return true;
+                return !wasScanned || elapsedTimeMs >= scannerHost.ScanningOptions.DelayBetweenContinuousScans;
             }
         }
 
-        void HandleOnPreviewFrameReady(object sender, FastJavaByteArray fastArray)
+        public void Analyze(IImageProxy image)
         {
-            if (!CanAnalyzeFrame)
-                return;
-
-            wasScanned = false;
-            lastPreviewAnalysis = DateTime.UtcNow;
-
-            processingTask = Task.Run(() =>
+            try
             {
-                try
-                {
-                    DecodeFrame(fastArray);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-            }).ContinueWith(task =>
-            {
-                if (task.IsFaulted)
-                    Log.Debug(MobileBarcodeScanner.TAG, "DecodeFrame exception occurs");
-            }, TaskContinuationOptions.OnlyOnFaulted);
-        }
+                if (image == null || !CanAnalyzeFrame || barcodeReader == null)
+                    return;
 
-        void DecodeFrame(FastJavaByteArray fastArray)
-        {
-            var resolution = cameraController.CameraResolution;
-            var width = resolution.Width;
-            var height = resolution.Height;
+                wasScanned = false;
+                lastPreviewAnalysis = DateTime.UtcNow;
 
-            var rotate = false;
-            var newWidth = width;
-            var newHeight = height;
+                var width = image.Width;
+                var height = image.Height;
+                var rotationDegrees = image.ImageInfo.RotationDegrees;
+                var rotate = rotationDegrees == 90 || rotationDegrees == 270;
+                var frame = CopyLuminance(image);
 
-            // use last value for performance gain
-            var cDegrees = cameraController.LastCameraDisplayOrientationDegree;
+                var start = PerformanceCounter.Start();
+                LuminanceSource source = new PlanarYUVLuminanceSource(frame, width, height, 0, 0, width, height, false);
+                if (rotate)
+                    source = source.rotateCounterClockwise();
 
-            if (cDegrees == 90 || cDegrees == 270)
-            {
-                rotate = true;
-                newWidth = height;
-                newHeight = width;
-            }
+                var result = barcodeReader.Decode(source);
+                PerformanceCounter.Stop(start,
+                    "Decode Time: {0} ms (width: " + width + ", height: " + height + ", degrees: " + rotationDegrees + ", rotate: " + rotate + ")");
 
-            var start = PerformanceCounter.Start();
+                if (result == null)
+                    return;
 
-            LuminanceSource fast = new FastJavaByteArrayYUVLuminanceSource(fastArray, width, height, 0, 0, width, height); // _area.Left, _area.Top, _area.Width, _area.Height);
-            if (rotate)
-                fast = fast.rotateCounterClockwise();
-
-            var result = barcodeReader.Decode(fast);
-
-            fastArray.Dispose();
-            fastArray = null;
-
-            PerformanceCounter.Stop(start,
-                "Decode Time: {0} ms (width: " + width + ", height: " + height + ", degrees: " + cDegrees + ", rotate: " +
-                rotate + ")");
-
-            if (result != null)
-            {
                 Log.Debug(MobileBarcodeScanner.TAG, "Barcode Found");
-
                 wasScanned = true;
                 BarcodeFound?.Invoke(result);
-                return;
             }
+            catch (Exception ex)
+            {
+                Log.Error(MobileBarcodeScanner.TAG, ex.ToString());
+            }
+            finally
+            {
+                image?.Close();
+            }
+        }
+
+        static byte[] CopyLuminance(IImageProxy image)
+        {
+            var width = image.Width;
+            var height = image.Height;
+            var plane = image.GetPlanes()[0];
+            var buffer = plane.Buffer;
+            var rowStride = plane.RowStride;
+            var pixelStride = plane.PixelStride;
+            var luminance = new byte[width * height];
+
+            for (var y = 0; y < height; y++)
+            {
+                var rowOffset = y * rowStride;
+                var outputOffset = y * width;
+                for (var x = 0; x < width; x++)
+                    luminance[outputOffset + x] = unchecked((byte)buffer.Get(rowOffset + x * pixelStride));
+            }
+
+            return luminance;
         }
     }
 }

@@ -4,6 +4,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
 using View = Android.Views.View;
+using Button = Android.Widget.Button;
 
 namespace ZXing.Net.Maui.Platforms.Android
 {
@@ -12,6 +13,7 @@ namespace ZXing.Net.Maui.Platforms.Android
         public ZXingScannerFragment() => UseCustomOverlayView = false;
 
         FrameLayout frame;
+        Button flashButton;
 
         public override View OnCreateView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle)
         {
@@ -21,7 +23,8 @@ namespace ZXing.Net.Maui.Platforms.Android
 
             try
             {
-                scanner = new ZXingSurfaceView(Activity, ScanningOptions);
+                scanner = new ZXingSurfaceView(Activity, ScanningOptions, this);
+                scanner.TorchStateChanged += UpdateFlashButtonText;
 
                 frame.AddView(scanner, layoutParams);
 
@@ -34,6 +37,11 @@ namespace ZXing.Net.Maui.Platforms.Android
                     };
 
                     frame.AddView(zxingOverlay, layoutParams);
+
+                    flashButton = new Button(Activity);
+                    UpdateFlashButtonText(IsTorchOn);
+                    flashButton.Click += (sender, args) => ToggleTorch();
+                    frame.AddView(flashButton, GetFlashButtonLayoutParams());
                 }
                 else if (CustomOverlayView != null)
                 {
@@ -60,14 +68,18 @@ namespace ZXing.Net.Maui.Platforms.Android
         {
             base.OnStart();
             // won't be 0 if OnCreateView has been called before.
-            if (frame.ChildCount == 0)
+            if (scanner != null && scanner.Parent == null)
             {
                 var layoutParams = GetChildLayoutParams();
                 // reattach scanner and overlay views.
                 frame.AddView(scanner, layoutParams);
 
                 if (!UseCustomOverlayView)
+                {
                     frame.AddView(zxingOverlay, layoutParams);
+                    if (flashButton != null)
+                        frame.AddView(flashButton, GetFlashButtonLayoutParams());
+                }
                 else if (CustomOverlayView != null)
                     frame.AddView(CustomOverlayView, layoutParams);
             }
@@ -87,6 +99,9 @@ namespace ZXing.Net.Maui.Platforms.Android
             else if (CustomOverlayView != null)
                 frame.RemoveView(CustomOverlayView);
 
+            if (flashButton != null)
+                frame.RemoveView(flashButton);
+
             base.OnStop();
         }
 
@@ -96,11 +111,29 @@ namespace ZXing.Net.Maui.Platforms.Android
                 Weight = 1
             };
 
+        FrameLayout.LayoutParams GetFlashButtonLayoutParams()
+            => new(ViewGroup.LayoutParams.WrapContent, ViewGroup.LayoutParams.WrapContent, GravityFlags.Bottom | GravityFlags.CenterHorizontal)
+            {
+                BottomMargin = (int)(24 * Activity.Resources.DisplayMetrics.Density)
+            };
+
+        void UpdateFlashButtonText(bool isTorchOn)
+        {
+            if (flashButton == null)
+                return;
+
+            flashButton.Text = isTorchOn
+                ? FlashOnButtonText ?? "Flash"
+                : FlashOffButtonText ?? "Flash";
+        }
+
         public View CustomOverlayView { get; set; }
         public bool UseCustomOverlayView { get; set; }
         public MobileBarcodeScanningOptions ScanningOptions { get; set; }
         public string TopText { get; set; }
         public string BottomText { get; set; }
+        public string FlashOnButtonText { get; set; }
+        public string FlashOffButtonText { get; set; }
 
         ZXingSurfaceView scanner;
         ZxingOverlayView zxingOverlay;
@@ -150,5 +183,11 @@ namespace ZXing.Net.Maui.Platforms.Android
 
         public bool HasTorch
             => scanner?.HasTorch ?? false;
+
+        public override void OnDestroy()
+        {
+            base.OnDestroy();
+            scanner?.TorchStateChanged -= UpdateFlashButtonText;
+        }
     }
 }

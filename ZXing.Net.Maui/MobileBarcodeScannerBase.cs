@@ -5,7 +5,8 @@
         public MobileBarcodeScannerBase()
         {
             CancelButtonText = "Cancel";
-            FlashButtonText = "Flash";
+            FlashOnButtonText = "⏼";
+            FlashOffButtonText = "⏻";
             CameraUnsupportedMessage = "Unable to start Camera for Scanning";
         }
 
@@ -17,7 +18,9 @@
 
         public string CancelButtonText { get; set; }
 
-        public string FlashButtonText { get; set; }
+        public string FlashOffButtonText { get; set; }
+
+        public string FlashOnButtonText { get; set; }
 
         public string CameraUnsupportedMessage { get; set; }
 

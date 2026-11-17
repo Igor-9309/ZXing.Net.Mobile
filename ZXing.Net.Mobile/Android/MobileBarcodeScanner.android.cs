@@ -9,15 +9,6 @@ namespace ZXing.Mobile
 	{
 		public const string TAG = "ZXing.Net.Mobile";
 
-		[Obsolete("Use Xamarin.Essentials.Platform.Init instead")]
-		public static void Initialize(Android.App.Application app)
-			=> Xamarin.Essentials.Platform.Init(app);
-
-		[Obsolete("No longer necessary.")]
-		public static void Uninitialize(Android.App.Application app)
-		{
-		}
-
 		public Android.Views.View CustomOverlay { get; set; }
 
 		bool torch = false;

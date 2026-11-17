@@ -16,11 +16,6 @@ The simplest example of using ZXing.Net.Mobile looks something like this:
 ```csharp  
 buttonScan.Click += (sender, e) => {
 
-	#if __ANDROID__
-	// Initialize the scanner first so it can track the current context
-	MobileBarcodeScanner.Initialize (Application);
-  	#endif
-  	
 	var scanner = new ZXing.Mobile.MobileBarcodeScanner();
 
 	var result = await scanner.Scan();
@@ -29,6 +24,8 @@ buttonScan.Click += (sender, e) => {
 		Console.WriteLine("Scanned Barcode: " + result.Text);
 };
 ```
+
+On Android, initialize Xamarin.Essentials once in your activity's `OnCreate` method (for example, `Xamarin.Essentials.Platform.Init(this, savedInstanceState)`) and forward `OnRequestPermissionsResult` to `Xamarin.Essentials.Platform.OnRequestPermissionsResult`.
 
 
 #### Xamarin Forms
@@ -40,7 +37,7 @@ For Xamarin Forms there is a bit more setup needed.  You will need to initialize
 On Android, in your main `Activity`'s `OnCreate (..)` implementation, call:
 
 ```csharp
-Xamarin.Essentials.Platform.Init(Application);
+Xamarin.Essentials.Platform.Init(this, savedInstanceState);
 ZXing.Net.Mobile.Forms.Android.Platform.Init();
 ```
 
@@ -123,11 +120,7 @@ All of the platform samples have examples of custom overlays.
 By default, all barcode formats are monitored while scanning.  You can change which formats to check for by passing a ZxingScanningOptions instance into the StartScanning method:
 
 ```csharp
-//NOTE: On Android you should call the initialize method with an application instance
-#if __ANDROID__
-// Initialize the scanner first so it can track the current context
-MobileBarcodeScanner.Initialize (Application);
-#endif
+// On Android, initialize Xamarin.Essentials in Activity.OnCreate as described above.
 
 var options = new ZXing.Mobile.MobileBarcodeScanningOptions();
 options.PossibleFormats = new List<ZXing.BarcodeFormat>() { 

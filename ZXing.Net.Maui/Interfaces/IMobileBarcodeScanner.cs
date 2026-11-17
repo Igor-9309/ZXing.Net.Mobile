@@ -22,7 +22,7 @@
         string BottomText { get; set; }
 
         string CancelButtonText { get; set; }
-        string FlashButtonText { get; set; }
+        string FlashOnButtonText { get; set; }
         string CameraUnsupportedMessage { get; set; }
 
         bool IsTorchOn { get; }

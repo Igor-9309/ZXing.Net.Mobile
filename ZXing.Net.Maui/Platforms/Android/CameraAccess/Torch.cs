@@ -1,6 +1,4 @@
-﻿using Android.Content;
-using Android.Content.PM;
-using Android.Hardware;
+﻿using System;
 using Android.Util;
 
 namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
@@ -8,47 +6,15 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
     public class Torch
     {
         readonly CameraController cameraController;
-        readonly Context context;
-        bool? hasTorch;
 
-        public Torch(CameraController cameraController, Context context)
-        {
-            this.cameraController = cameraController;
-            this.context = context;
-        }
+        public Torch(CameraController cameraController)
+            => this.cameraController = cameraController;
 
-        public bool IsSupported
-        {
-            get
-            {
-                if (hasTorch.HasValue)
-                    return hasTorch.Value;
-
-                if (!context.PackageManager.HasSystemFeature(PackageManager.FeatureCameraFlash))
-                {
-                    Log.Info(MobileBarcodeScanner.TAG, "Flash not supported on this device");
-                    return false;
-                }
-
-                if (cameraController.Camera == null)
-                {
-                    Log.Info(MobileBarcodeScanner.TAG, "Run camera first");
-                    return false;
-                }
-
-                var p = cameraController.Camera.GetParameters();
-                var supportedFlashModes = p.SupportedFlashModes;
-
-                if ((supportedFlashModes != null)
-                    && (supportedFlashModes.Contains(Camera.Parameters.FlashModeTorch)
-                    || supportedFlashModes.Contains(Camera.Parameters.FlashModeOn)))
-                    hasTorch = Mobile.Android.PermissionsHandler.IsTorchPermissionDeclared();
-
-                return hasTorch != null && hasTorch.Value;
-            }
-        }
+        public bool IsSupported => cameraController.HasTorch;
 
         public bool IsEnabled { get; private set; }
+
+        public event Action<bool> StateChanged;
 
         public void TurnOn() => Enable(true);
 
@@ -61,35 +27,20 @@ namespace ZXing.Net.Maui.Platforms.Android.CameraAccess
             if (!IsSupported || IsEnabled == state)
                 return;
 
-            if (cameraController.Camera == null)
+            if (!cameraController.IsCameraRunning)
             {
-                Log.Info(MobileBarcodeScanner.TAG, "NULL Camera, cannot toggle torch");
+                Log.Info(MobileBarcodeScanner.TAG, "Camera is not running; cannot toggle torch.");
                 return;
             }
 
-            var parameters = cameraController.Camera.GetParameters();
-            var supportedFlashModes = parameters.SupportedFlashModes;
-
-            var flashMode = string.Empty;
-            if (state)
+            cameraController.SetTorch(state, succeeded =>
             {
-                if (supportedFlashModes.Contains(Camera.Parameters.FlashModeTorch))
-                    flashMode = Camera.Parameters.FlashModeTorch;
-                else if (supportedFlashModes.Contains(Camera.Parameters.FlashModeOn))
-                    flashMode = Camera.Parameters.FlashModeOn;
-            }
-            else
-            {
-                if (supportedFlashModes != null && supportedFlashModes.Contains(Camera.Parameters.FlashModeOff))
-                    flashMode = Camera.Parameters.FlashModeOff;
-            }
-
-            if (!string.IsNullOrEmpty(flashMode))
-            {
-                parameters.FlashMode = flashMode;
-                cameraController.Camera.SetParameters(parameters);
-                IsEnabled = state;
-            }
+                if (succeeded)
+                {
+                    IsEnabled = state;
+                    StateChanged?.Invoke(state);
+                }
+            });
         }
     }
 }
